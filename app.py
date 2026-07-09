@@ -6,115 +6,79 @@ import numpy as np
 model = joblib.load("disease_model.pkl")
 
 # Page Configuration
-st.set_page_config(
-    page_title="Heart Disease Prediction",
-    page_icon="❤️",
-    layout="centered"
-)
+st.set_page_config(page_title="Heart Disease Prediction", page_icon="❤️", layout="wide")
 
-# Title
-st.title("❤️ Heart Disease Prediction")
-st.write("Enter the patient's details below and click Predict.")
+st.title("❤️ Heart Disease Prediction using Random Forest")
+st.write("Fill in the patient's details below and click **Predict**.")
 
-# User Inputs
-age = st.number_input("Age", min_value=1, max_value=120, value=50)
+st.markdown("---")
 
-sex = st.selectbox(
-    "Sex",
-    ["Male", "Female"]
-)
-sex = 1 if sex == "Male" else 0
+col1, col2 = st.columns(2)
 
-chest_pain = st.selectbox(
-    "Chest Pain Type",
-    [1, 2, 3, 4]
-)
+with col1:
+    age = st.number_input("Age", 20, 100, 50)
+    sex = st.selectbox("Sex", ["Male", "Female"])
+    cp = st.selectbox("Chest Pain Type", [1, 2, 3, 4])
+    trestbps = st.number_input("Resting Blood Pressure", 80, 220, 120)
+    chol = st.number_input("Serum Cholesterol", 100, 600, 200)
+    fbs = st.selectbox("Fasting Blood Sugar >120 mg/dl", [0, 1])
+    restecg = st.selectbox("Resting ECG", [0, 1, 2])
 
-bp = st.number_input(
-    "Resting Blood Pressure (BP)",
-    min_value=50,
-    max_value=250,
-    value=120
-)
+with col2:
+    thalach = st.number_input("Maximum Heart Rate", 60, 220, 150)
+    exang = st.selectbox("Exercise Induced Angina", [0, 1])
+    oldpeak = st.number_input("Old Peak", 0.0, 10.0, 1.0)
+    slope = st.selectbox("Slope", [1, 2, 3])
+    ca = st.selectbox("Number of Major Vessels", [0, 1, 2, 3])
+    thal = st.selectbox("Thal", [3, 6, 7])
 
-cholesterol = st.number_input(
-    "Cholesterol",
-    min_value=100,
-    max_value=700,
-    value=200
-)
+if sex == "Male":
+    sex = 1
+else:
+    sex = 0
 
-fbs = st.selectbox(
-    "Fasting Blood Sugar > 120 mg/dl",
-    ["No", "Yes"]
-)
-fbs = 1 if fbs == "Yes" else 0
+input_data = np.array([[age, sex, cp, trestbps, chol, fbs,
+                        restecg, thalach, exang, oldpeak,
+                        slope, ca, thal]])
 
-ekg = st.selectbox(
-    "Resting ECG Results",
-    [0, 1, 2]
-)
+st.markdown("###")
 
-max_hr = st.number_input(
-    "Maximum Heart Rate",
-    min_value=50,
-    max_value=250,
-    value=150
-)
-
-exercise_angina = st.selectbox(
-    "Exercise Induced Angina",
-    ["No", "Yes"]
-)
-exercise_angina = 1 if exercise_angina == "Yes" else 0
-
-st_depression = st.number_input(
-    "ST Depression",
-    min_value=0.0,
-    max_value=10.0,
-    value=1.0,
-    step=0.1
-)
-
-slope = st.selectbox(
-    "Slope of ST Segment",
-    [1, 2, 3]
-)
-
-vessels = st.selectbox(
-    "Number of Major Vessels",
-    [0, 1, 2, 3]
-)
-
-thal = st.selectbox(
-    "Thallium Test",
-    [3, 6, 7]
-)
-
-# Prediction Button
-if st.button("Predict"):
-
-    input_data = np.array([[
-        age,
-        sex,
-        chest_pain,
-        bp,
-        cholesterol,
-        fbs,
-        ekg,
-        max_hr,
-        exercise_angina,
-        st_depression,
-        slope,
-        vessels,
-        thal
-    ]])
+if st.button("❤️ Predict Heart Disease", use_container_width=True):
 
     prediction = model.predict(input_data)
+    probability = model.predict_proba(input_data)
 
-    st.subheader("Prediction Result")
+    st.markdown("---")
 
     if prediction[0] == 1:
         st.error("⚠️ Heart Disease Detected")
     else:
         st.success("✅ No Heart Disease Detected")
+
+    st.subheader("Prediction Probability")
+
+    st.write(f"Heart Disease: **{probability[0][1]*100:.2f}%**")
+    st.progress(float(probability[0][1]))
+
+    st.write(f"No Heart Disease: **{probability[0][0]*100:.2f}%**")
+
+    st.markdown("---")
+
+    st.subheader("Entered Details")
+
+    st.table({
+        "Feature": [
+            "Age", "Sex", "Chest Pain", "Blood Pressure",
+            "Cholesterol", "FBS", "Rest ECG",
+            "Max Heart Rate", "Exercise Angina",
+            "Old Peak", "Slope", "Major Vessels", "Thal"
+        ],
+        "Value": [
+            age, sex, cp, trestbps, chol, fbs,
+            restecg, thalach, exang,
+            oldpeak, slope, ca, thal
+        ]
+    })
+
+st.markdown("---")
+st.caption("Developed using Random Forest Classifier and Streamlit")
