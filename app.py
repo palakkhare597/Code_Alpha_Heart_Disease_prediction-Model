@@ -80,5 +80,4 @@ if st.button("❤️ Predict Heart Disease", use_container_width=True):
         ]
     })
 
-st.markdown("---")
-st.caption("Developed using Random Forest Classifier and Streamlit")
+
